@@ -473,6 +473,7 @@
     }
     if (scannerAtivo) return;
 
+    ultimasLeiturasCamera = [];
     definirStatusCamera("iniciando", "Iniciando câmera…");
 
     Quagga.init(
@@ -486,21 +487,20 @@
             height: { ideal: 720 },
           },
         },
-        locator: { patchSize: "medium", halfSample: true },
+        locator: { patchSize: "medium", halfSample: false },
         numOfWorkers: navigator.hardwareConcurrency ? Math.min(4, navigator.hardwareConcurrency) : 2,
         frequency: 10,
         decoder: {
           readers: [
             "code_128_reader",
-            "code_39_reader",
-            "code_39_vin_reader",
+            { format: "code_39_reader", config: { mod43: true } }, // exige dígito verificador — reduz muito leitura errada
             "ean_reader",
             "ean_8_reader",
             "upc_reader",
             "upc_e_reader",
-            "codabar_reader",
-            "i2of5_reader",
           ],
+          // codabar e i2of5 foram removidos: são os formatos mais sujeitos a
+          // "leitura fantasma" no Quagga.js por não terem checagem de erro forte
         },
         locate: true,
       },
@@ -520,10 +520,30 @@
     Quagga.onDetected(onCodigoDetectado);
   }
 
+  // Exige que a câmera leia o MESMO código 3 vezes seguidas antes de
+  // aceitar. Leituras "fantasma" (ruído, reflexo, borrão) quase nunca se
+  // repetem de forma idêntica várias vezes seguidas, então isso elimina a
+  // grande maioria dos códigos errados sem atrasar leituras reais.
+  const LEITURAS_CONSECUTIVAS_NECESSARIAS = 3;
+  let ultimasLeiturasCamera = [];
+
   function onCodigoDetectado(resultado) {
     const codigo = resultado && resultado.codeResult && resultado.codeResult.code;
     if (!codigo) return;
-    processarLeitura(codigo, "camera");
+
+    ultimasLeiturasCamera.push(codigo);
+    if (ultimasLeiturasCamera.length > LEITURAS_CONSECUTIVAS_NECESSARIAS) {
+      ultimasLeiturasCamera.shift();
+    }
+
+    const confirmadas =
+      ultimasLeiturasCamera.length === LEITURAS_CONSECUTIVAS_NECESSARIAS &&
+      ultimasLeiturasCamera.every((c) => c === codigo);
+
+    if (confirmadas) {
+      ultimasLeiturasCamera = [];
+      processarLeitura(codigo, "camera");
+    }
   }
 
   function pararScannerCamera() {
@@ -535,6 +555,7 @@
       /* ignora erro ao parar */
     }
     scannerAtivo = false;
+    ultimasLeiturasCamera = [];
   }
 
   // pausa a câmera quando o app vai para segundo plano (economiza bateria)
