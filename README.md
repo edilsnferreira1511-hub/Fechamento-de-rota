@@ -7,27 +7,35 @@ puro, sem backend, pronto para o GitHub Pages.
 
 ## Como publicar no GitHub Pages
 
-1. Crie um repositório no GitHub (ex.: `confere-rota`) e envie **todos** os
-   arquivos desta pasta para a raiz dele (mantendo a estrutura de pastas
-   `css/`, `js/`, `icons/`).
-2. No repositório, vá em **Settings → Pages**.
-3. Em **Source**, selecione a branch `main` (ou `master`) e a pasta `/root`.
-4. Salve. Em alguns minutos o app estará disponível em
+1. Crie um repositório no GitHub (ex.: `confere-rota`).
+2. Vá em **Add file → Upload files** e arraste **todos os arquivos desta
+   pasta de uma vez** (não tem pasta nenhuma pra se preocupar — é só
+   selecionar tudo e soltar).
+3. Commit.
+4. No repositório, vá em **Settings → Pages**.
+5. Em **Source**, selecione a branch `main` (ou `master`) e a pasta `/root`.
+6. Salve. Em alguns minutos o app estará disponível em
    `https://SEU-USUARIO.github.io/confere-rota/`.
-5. Abra o link no celular pelo Chrome (Android) ou Safari (iOS).
+7. Abra o link no celular pelo Chrome (Android) ou Safari (iOS).
 
 Não é necessário nenhum passo de build — os arquivos já estão prontos para
 produção.
 
 ## Estrutura de arquivos
 
+Todos os arquivos ficam soltos, direto na raiz do repositório — sem
+subpastas:
+
 ```
 index.html          Estrutura das duas telas (dados da rota e scanner)
-css/style.css        Todo o visual (tema azul-marinho + branco, responsivo)
-js/app.js             Lógica: formulário, câmera, leitor bluetooth, lista, WhatsApp, PWA
-manifest.json         Metadados do app instalável (ícones, cores, nome)
-sw.js                  Service worker — cache do app shell para uso offline
-icons/                 Ícones do app (192px, 512px e versões "maskable")
+style.css             Todo o visual (tema azul-marinho + branco, responsivo)
+app.js                 Lógica: formulário, câmera, leitor bluetooth, lista, WhatsApp, PWA
+manifest.json          Metadados do app instalável (ícones, cores, nome)
+sw.js                   Service worker — cache do app shell para uso offline
+icon-192.png            Ícone do app (192px)
+icon-512.png            Ícone do app (512px)
+icon-maskable-192.png   Ícone "maskable" (192px)
+icon-maskable-512.png   Ícone "maskable" (512px)
 ```
 
 ## Funcionalidades
@@ -73,12 +81,13 @@ icons/                 Ícones do app (192px, 512px e versões "maskable")
   (jsDelivr) na primeira visita e fica em cache pelo service worker para
   uso offline depois disso. Se quiser eliminar totalmente a dependência de
   CDN, baixe o arquivo `quagga.min.js` e referencie-o localmente em
-  `js/vendor/quagga.min.js`, ajustando o `<script>` no `index.html` e a
+  `quagga.min.js` (arquivo solto, na raiz, como os demais), ajustando o
+  `<script>` no `index.html` e a
   lista `ARQUIVOS_EXTERNOS` do `sw.js`.
 - **Número de WhatsApp**: como o pedido não especifica um número fixo de
   destino, o app abre o WhatsApp com a mensagem pronta e deixa o motorista
   escolher o contato/grupo. Se quiser enviar sempre para um número fixo,
-  troque a URL em `js/app.js` (função `btnEnviarWhatsapp` → adicione o
+  troque a URL em `app.js` (função `btnEnviarWhatsapp` → adicione o
   número, ex.: `https://api.whatsapp.com/send?phone=55SEUNUMERO&text=...`).
 
 [Quagga.js]: https://github.com/serratus/quaggaJS
