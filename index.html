@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Confere Rota · Conferência de Pacotes</title>
+<meta name="description" content="Registre os pacotes de uma rota por leitura de código de barras e envie a conferência pelo WhatsApp.">
+
+<meta name="theme-color" content="#0A1F3D">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Confere Rota">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===================== TELA INICIAL ===================== -->
+<section id="tela-inicial" class="tela tela--ativa">
+  <header class="appbar appbar--form">
+    <div class="appbar__brand">
+      <span class="appbar__logo" aria-hidden="true">📦</span>
+      <div class="appbar__titles">
+        <h1 class="appbar__title">Confere Rota</h1>
+        <p class="appbar__subtitle">Conferência de pacotes por rota</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="conteudo conteudo--form">
+    <form id="form-rota" class="cartao" novalidate>
+      <h2 class="cartao__titulo">Dados da rota</h2>
+      <p class="cartao__ajuda">Preencha os dados abaixo antes de iniciar a leitura dos pacotes.</p>
+
+      <div class="campo">
+        <label for="input-placa">Placa do veículo</label>
+        <input type="text" id="input-placa" name="placa" placeholder="ABC1D23" autocomplete="off" autocapitalize="characters" maxlength="10" required>
+        <span class="campo__erro" id="erro-placa">Informe a placa do veículo.</span>
+      </div>
+
+      <div class="campo">
+        <label for="input-motorista">Nome do motorista</label>
+        <input type="text" id="input-motorista" name="motorista" placeholder="Ex: João Silva" autocomplete="off" required>
+        <span class="campo__erro" id="erro-motorista">Informe o nome do motorista.</span>
+      </div>
+
+      <div class="campo">
+        <label for="input-rota">Rota</label>
+        <input type="text" id="input-rota" name="rota" placeholder="Ex: Rota 15" autocomplete="off" required>
+        <span class="campo__erro" id="erro-rota">Informe a rota.</span>
+      </div>
+
+      <div class="campo">
+        <label for="input-id-rota">ID da rota</label>
+        <input type="text" id="input-id-rota" name="idRota" placeholder="Ex: 987654" autocomplete="off" inputmode="numeric" required>
+        <span class="campo__erro" id="erro-id-rota">Informe o ID da rota.</span>
+      </div>
+
+      <button type="submit" class="botao botao--primario botao--grande">
+        Continuar
+        <span class="botao__icone" aria-hidden="true">→</span>
+      </button>
+    </form>
+
+    <button id="btn-instalar" class="botao-instalar" hidden>
+      ⬇️ Instalar aplicativo
+    </button>
+  </main>
+</section>
+
+<!-- ===================== TELA SCANNER ===================== -->
+<section id="tela-scanner" class="tela">
+  <header class="appbar appbar--scanner">
+    <button id="btn-voltar" class="appbar__voltar" aria-label="Voltar" type="button">←</button>
+    <div class="appbar__titles">
+      <h1 class="appbar__title" id="titulo-rota">Rota</h1>
+      <p class="appbar__subtitle" id="subtitulo-placa">Placa</p>
+    </div>
+    <button id="btn-limpar" class="appbar__acao" type="button" title="Limpar lista">🗑️</button>
+  </header>
+
+  <main class="conteudo conteudo--scanner">
+
+    <div class="scanner-wrap">
+      <div id="scanner-viewport" class="scanner-viewport"></div>
+
+      <div class="scanner-overlay" aria-hidden="true">
+        <div class="scanner-frame">
+          <span class="scanner-frame__corner scanner-frame__corner--tl"></span>
+          <span class="scanner-frame__corner scanner-frame__corner--tr"></span>
+          <span class="scanner-frame__corner scanner-frame__corner--bl"></span>
+          <span class="scanner-frame__corner scanner-frame__corner--br"></span>
+          <span class="scanner-frame__laser"></span>
+        </div>
+      </div>
+
+      <div class="camera-status" id="camera-status">
+        <span class="camera-status__dot" id="camera-status-dot"></span>
+        <span id="camera-status-texto">Iniciando câmera…</span>
+      </div>
+    </div>
+
+    <div class="contador" id="contador-wrap">
+      <span class="contador__numero" id="contador-numero">0</span>
+      <span class="contador__label">pacotes lidos</span>
+    </div>
+
+    <div class="entrada-manual">
+      <input type="text" id="input-manual" placeholder="Ou digite/bipe o código aqui" autocomplete="off" autocapitalize="characters" inputmode="text">
+      <button id="btn-adicionar-manual" type="button" class="botao botao--outline">Adicionar</button>
+    </div>
+    <p class="entrada-manual__dica">📡 Leitores Bluetooth (pistola) funcionam automaticamente, mesmo sem estar neste campo.</p>
+
+    <div class="lista-wrap">
+      <div class="lista-header">
+        <h2>Pacotes escaneados</h2>
+        <span class="lista-header__badge" id="lista-badge">0</span>
+      </div>
+      <ul id="lista-pacotes" class="lista-pacotes">
+        <li class="lista-vazia" id="lista-vazia">Nenhum pacote escaneado ainda.</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer class="rodape-envio">
+    <button id="btn-enviar-whatsapp" class="botao botao--whatsapp botao--grande" disabled>
+      <span class="botao__icone" aria-hidden="true">📲</span>
+      Enviar para WhatsApp
+    </button>
+  </footer>
+</section>
+
+<!-- ===================== TOASTS ===================== -->
+<div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ===================== MODAL CONFIRMAÇÃO ===================== -->
+<div id="modal-confirmar" class="modal-overlay" hidden>
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <h3 id="modal-titulo">Confirmar ação</h3>
+    <p id="modal-texto">Tem certeza?</p>
+    <div class="modal-acoes">
+      <button id="modal-cancelar" class="botao botao--texto" type="button">Cancelar</button>
+      <button id="modal-confirmar-btn" class="botao botao--perigo" type="button">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
