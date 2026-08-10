@@ -236,7 +236,7 @@ html,body{overflow-x:hidden;width:100%;}
 /* ===================== GRADE DE HORÁRIOS ===================== */
 .slot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .slot-btn{
-  padding:13px 8px;border-radius:10px;text-align:center;font-weight:700;font-size:14px;
+  padding:13px 8px;border-radius:14px;text-align:center;font-weight:700;font-size:14px;
   background:var(--surface-flat);border:1px solid var(--border);color:var(--white);
   transition:transform .1s ease;
 }

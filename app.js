@@ -347,13 +347,24 @@ async function initTimeStep(){
   document.getElementById('btn-step4-continue').disabled = true;
   const wrap = document.getElementById('slots-wrap');
   wrap.innerHTML = '<div class="loader"></div>';
-  const { barber, service, dateKey:dk } = state.booking;
-  const hours = state.businessSettings.hours[WEEKDAY_KEYS[dateFromKey(dk).getDay()]];
   try{
+    const { barber, service, dateKey:dk } = state.booking;
+    const weekday = WEEKDAY_KEYS[dateFromKey(dk).getDay()];
+    // fallback seguro: se o dia não estiver configurado no Firestore por
+    // algum motivo, usa o horário padrão em vez de quebrar o carregamento
+    const hours = (state.businessSettings && state.businessSettings.hours && state.businessSettings.hours[weekday])
+      || defaultHours()[weekday];
+    if(!hours || hours.closed || !hours.open || !hours.close){
+      wrap.innerHTML = emptyState('Barbearia fechada nesse dia.');
+      return;
+    }
     const [apptsSnap, blockedSnap] = await Promise.all([
       db.collection('appointments').where('barberId','==',barber.id).get(),
       db.collection('blockedTimes').where('barberId','in',[barber.id,'all']).get(),
     ]);
+    // .docs vem como array vazio (não erro) quando não há nada cadastrado,
+    // então os horários padrão da barbearia aparecem normalmente mesmo
+    // sem nenhum agendamento ou bloqueio ainda existir
     const busy = apptsSnap.docs.map(d=>d.data())
       .filter(a => a.date===dk && (a.status==='confirmed' || a.status==='completed'))
       .map(a=>({startTime:a.startTime, durationMin:a.serviceDuration}));
