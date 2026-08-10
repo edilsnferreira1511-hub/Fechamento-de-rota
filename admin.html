@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Painel Administrativo — Denner Barbearia</title>
+<meta name="theme-color" content="#04060c">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== PRIMEIRO ACESSO (CRIAR PIN) ===================== -->
+<div class="login-wrap hidden" id="setup-screen">
+  <div class="login-logo">
+    <div class="word">DENNER <span class="g">BARBEARIA</span></div>
+    <div class="sub">Primeiro acesso</div>
+  </div>
+  <p style="font-size:13px;color:var(--white-dim);line-height:1.6;margin-bottom:18px;text-align:center;">
+    Nenhum administrador foi criado ainda. Escolha o PIN que você vai usar
+    daqui pra frente para entrar no painel.
+  </p>
+  <div class="field"><label>Criar PIN (mínimo 6 dígitos)</label><input type="password" inputmode="numeric" id="setup-pin" placeholder="••••••" class="pin-input" style="letter-spacing:6px;font-size:20px;"></div>
+  <div class="field"><label>Confirme o PIN</label><input type="password" inputmode="numeric" id="setup-pin2" placeholder="••••••" class="pin-input" style="letter-spacing:6px;font-size:20px;"></div>
+  <button class="btn btn-primary" id="btn-setup-create">CRIAR PIN E ENTRAR</button>
+  <button class="btn btn-ghost" id="btn-setup-back-site">Voltar para o site</button>
+</div>
+
+<!-- ===================== LOGIN ===================== -->
+<div class="login-wrap hidden" id="login-screen">
+  <div class="login-logo">
+    <div class="word">DENNER <span class="g">BARBEARIA</span></div>
+    <div class="sub">Painel Administrativo</div>
+  </div>
+  <div class="field"><label>PIN de administrador</label><input type="password" inputmode="numeric" id="login-pin" placeholder="••••" class="pin-input" style="letter-spacing:8px;font-size:22px;"></div>
+  <button class="btn btn-primary" id="btn-login">ENTRAR</button>
+  <button class="btn btn-ghost" id="btn-back-site">Voltar para o site</button>
+</div>
+
+<!-- ===================== PAINEL ===================== -->
+<div class="app-shell hidden" id="admin-shell" style="max-width:560px;padding-bottom:40px;">
+  <header class="app-header">
+    <div class="brand"><span class="dot"></span> PAINEL ADMIN</div>
+    <button class="icon-btn" id="btn-logout" aria-label="Sair"><span data-icon="logout"></span></button>
+  </header>
+
+  <div class="sidebar-tabs" id="admin-tabs">
+    <button class="stab active" data-tab="dashboard">Dashboard</button>
+    <button class="stab" data-tab="agendamentos">Agendamentos</button>
+    <button class="stab" data-tab="barbeiros">Barbeiros</button>
+    <button class="stab" data-tab="servicos">Serviços</button>
+    <button class="stab" data-tab="fotos">Fotos</button>
+    <button class="stab" data-tab="config">Configurações</button>
+  </div>
+
+  <div class="screen">
+    <!-- DASHBOARD -->
+    <div class="admin-panel" id="panel-dashboard">
+      <div class="stat-grid" id="dash-stats"></div>
+      <div class="section-heading">AGENDAMENTOS DE HOJE</div>
+      <div id="dash-today"><div class="loader"></div></div>
+    </div>
+
+    <!-- AGENDAMENTOS -->
+    <div class="admin-panel hidden" id="panel-agendamentos">
+      <div class="filter-row">
+        <input type="date" id="filter-date" style="flex:1;min-width:110px;padding:10px 12px;border-radius:10px;background:var(--surface-flat);border:1px solid var(--border);color:var(--white);font-size:12.5px;">
+        <select id="filter-barber"><option value="">Todos barbeiros</option></select>
+        <select id="filter-service"><option value="">Todos serviços</option></select>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;">
+        <button class="btn btn-secondary btn-sm" id="btn-clear-filters">Limpar filtros</button>
+        <button class="btn btn-primary btn-sm" id="btn-new-agendamento">＋ NOVO AGENDAMENTO</button>
+      </div>
+      <div id="agendamentos-list"><div class="loader"></div></div>
+    </div>
+
+    <!-- BARBEIROS -->
+    <div class="admin-panel hidden" id="panel-barbeiros">
+      <button class="btn btn-primary btn-sm" id="btn-new-barbeiro" style="margin-bottom:14px;">＋ NOVO BARBEIRO</button>
+      <div id="barbeiros-list"><div class="loader"></div></div>
+    </div>
+
+    <!-- SERVIÇOS -->
+    <div class="admin-panel hidden" id="panel-servicos">
+      <button class="btn btn-primary btn-sm" id="btn-new-servico" style="margin-bottom:14px;">＋ NOVO SERVIÇO</button>
+      <div id="servicos-list"><div class="loader"></div></div>
+    </div>
+
+    <!-- FOTOS -->
+    <div class="admin-panel hidden" id="panel-fotos">
+      <div class="section-heading">GALERIA</div>
+      <div id="gallery-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"></div>
+      <button class="btn btn-secondary" id="btn-add-photo">＋ ADICIONAR FOTO</button>
+    </div>
+
+    <!-- CONFIGURAÇÕES -->
+    <div class="admin-panel hidden" id="panel-config">
+      <div class="section-heading">DADOS DA BARBEARIA</div>
+      <div class="card card-pad" style="margin-bottom:16px;">
+        <div class="field"><label>Nome</label><input id="cfg-name"></div>
+        <div class="field"><label>Logo</label>
+          <input type="hidden" id="cfg-logo">
+          <div class="photo-upload" id="cfg-logo-preview" style="height:90px;margin-bottom:8px;"><span data-icon="camera"></span><span>Nenhuma foto</span></div>
+          <label class="btn btn-secondary btn-sm" style="display:block;text-align:center;">ESCOLHER FOTO DA LOGO
+            <input type="file" accept="image/*" id="cfg-logo-file" style="display:none;">
+          </label>
+        </div>
+        <div class="field"><label>Foto de capa / fachada</label>
+          <input type="hidden" id="cfg-cover">
+          <div class="photo-upload" id="cfg-cover-preview" style="height:90px;margin-bottom:8px;"><span data-icon="camera"></span><span>Nenhuma foto</span></div>
+          <label class="btn btn-secondary btn-sm" style="display:block;text-align:center;">ESCOLHER FOTO DE CAPA
+            <input type="file" accept="image/*" id="cfg-cover-file" style="display:none;">
+          </label>
+        </div>
+        <div class="field"><label>Telefone</label><input id="cfg-phone"></div>
+        <div class="field"><label>WhatsApp (com DDD, só números)</label><input id="cfg-whatsapp"></div>
+        <div class="field"><label>Endereço completo</label><input id="cfg-address"></div>
+        <div class="field"><label>Instagram (@usuario)</label><input id="cfg-instagram"></div>
+        <div class="field"><label>Facebook (URL)</label><input id="cfg-facebook"></div>
+        <button class="btn btn-primary" id="btn-save-config">SALVAR CONFIGURAÇÕES</button>
+      </div>
+
+      <div class="section-heading">HORÁRIO DE FUNCIONAMENTO</div>
+      <div class="card card-pad" id="cfg-hours" style="margin-bottom:16px;"></div>
+      <button class="btn btn-primary" id="btn-save-hours" style="margin-bottom:24px;">SALVAR HORÁRIOS</button>
+
+      <div class="section-heading">BLOQUEAR HORÁRIOS</div>
+      <div id="blocked-list" style="margin-bottom:10px;"></div>
+      <button class="btn btn-secondary" id="btn-add-block">＋ NOVO BLOQUEIO</button>
+
+      <div class="section-heading" style="margin-top:22px;">FOLGAS DOS BARBEIROS</div>
+      <div id="daysoff-list" style="margin-bottom:10px;"></div>
+      <button class="btn btn-secondary" id="btn-add-dayoff">＋ NOVA FOLGA</button>
+
+      <div class="section-heading" style="margin-top:22px;">ADMINISTRADOR</div>
+      <div class="card card-pad" style="margin-bottom:16px;">
+        <div class="field"><label>Novo PIN (mínimo 6 dígitos)</label><input type="password" inputmode="numeric" id="cfg-new-pin" placeholder="••••••"></div>
+        <div class="field"><label>Confirme o novo PIN</label><input type="password" inputmode="numeric" id="cfg-new-pin2" placeholder="••••••"></div>
+        <button class="btn btn-secondary" id="btn-change-pin">TROCAR PIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: BARBEIRO ===================== -->
+<div class="modal-overlay hidden" id="modal-barbeiro">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title" id="barbeiro-modal-title">Novo Barbeiro</h3>
+    <input type="hidden" id="barbeiro-id">
+    <div class="field"><label>Foto</label>
+      <label class="photo-upload" id="barbeiro-photo-preview"><span data-icon="camera"></span><span>Toque para escolher foto</span>
+        <input type="file" accept="image/*" id="barbeiro-photo-file" style="display:none;">
+      </label>
+    </div>
+    <div class="field"><label>Nome</label><input id="barbeiro-nome" placeholder="Nome do barbeiro"></div>
+    <div class="field"><label>Telefone</label><input id="barbeiro-telefone" placeholder="(62) 99999-9999"></div>
+    <div id="barbeiro-login-fields">
+      <div class="field"><label>E-mail de login</label><input type="email" id="barbeiro-email" placeholder="joao@exemplo.com"></div>
+      <div class="field"><label>Senha de login</label><input type="password" id="barbeiro-senha" placeholder="mínimo 6 caracteres"></div>
+      <p style="font-size:11.5px;color:var(--white-faint);margin:-8px 0 14px;line-height:1.5;">
+        É esse e-mail e senha que o barbeiro vai usar para entrar na própria agenda.
+      </p>
+    </div>
+    <p id="barbeiro-login-fixed" class="hidden" style="font-size:11.5px;color:var(--white-faint);margin:-4px 0 14px;line-height:1.5;">
+      Login já criado para este barbeiro. Para trocar a senha dele, use "Esqueci minha senha" na tela de login do barbeiro.
+    </p>
+    <div class="switch-row"><span>Ativo (visível para clientes)</span><div class="switch on" id="barbeiro-ativo"></div></div>
+    <button class="btn btn-primary btn-block-gap" id="btn-save-barbeiro">SALVAR</button>
+    <button class="btn btn-ghost" id="btn-cancel-barbeiro">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: SERVIÇO ===================== -->
+<div class="modal-overlay hidden" id="modal-servico">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title" id="servico-modal-title">Novo Serviço</h3>
+    <input type="hidden" id="servico-id">
+    <div class="field"><label>Foto</label>
+      <label class="photo-upload" id="servico-photo-preview"><span data-icon="camera"></span><span>Toque para escolher foto</span>
+        <input type="file" accept="image/*" id="servico-photo-file" style="display:none;">
+      </label>
+    </div>
+    <div class="field"><label>Nome</label><input id="servico-nome" placeholder="Ex: Corte + Barba"></div>
+    <div class="field-row">
+      <div class="field"><label>Preço (R$)</label><input type="number" step="0.01" id="servico-preco"></div>
+      <div class="field"><label>Duração (min)</label><input type="number" id="servico-duracao"></div>
+    </div>
+    <div class="field"><label>Descrição</label><textarea id="servico-descricao" rows="2"></textarea></div>
+    <div class="switch-row"><span>Ativo (visível para clientes)</span><div class="switch on" id="servico-ativo"></div></div>
+    <button class="btn btn-primary btn-block-gap" id="btn-save-servico">SALVAR</button>
+    <button class="btn btn-ghost" id="btn-cancel-servico">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: FOTO GALERIA ===================== -->
+<div class="modal-overlay hidden" id="modal-foto">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">Adicionar Foto</h3>
+    <label class="photo-upload" id="foto-preview"><span data-icon="camera"></span><span>Toque para escolher foto</span>
+      <input type="file" accept="image/*" id="foto-file" style="display:none;">
+    </label>
+    <div class="field"><label>Seção</label>
+      <select id="foto-secao"><option value="gallery">Galeria</option><option value="home">Página inicial</option><option value="about">Sobre a Denner</option></select>
+    </div>
+    <button class="btn btn-primary btn-block-gap" id="btn-save-foto">ADICIONAR</button>
+    <button class="btn btn-ghost" id="btn-cancel-foto">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: AGENDAMENTO MANUAL ===================== -->
+<div class="modal-overlay hidden" id="modal-agendamento">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title" id="ag-modal-title">Novo Agendamento</h3>
+    <input type="hidden" id="ag-id">
+    <div class="field"><label>Cliente</label><input id="ag-cliente" placeholder="Nome do cliente"></div>
+    <div class="field"><label>Telefone</label><input id="ag-telefone" placeholder="(62) 99999-9999"></div>
+    <div class="field"><label>Serviço</label><select id="ag-servico"></select></div>
+    <div class="field"><label>Barbeiro</label><select id="ag-barbeiro"></select></div>
+    <div class="field-row">
+      <div class="field"><label>Data</label><input type="date" id="ag-data"></div>
+      <div class="field"><label>Horário</label><input type="time" id="ag-horario"></div>
+    </div>
+    <button class="btn btn-primary btn-block-gap" id="btn-save-agendamento">CRIAR AGENDAMENTO</button>
+    <button class="btn btn-ghost" id="btn-cancel-agendamento">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: BLOQUEIO ===================== -->
+<div class="modal-overlay hidden" id="modal-bloqueio">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">Novo Bloqueio</h3>
+    <div class="field"><label>Barbeiro</label><select id="bl-barbeiro"><option value="all">Todos os barbeiros</option></select></div>
+    <div class="field"><label>Data</label><input type="date" id="bl-data"></div>
+    <div class="switch-row"><span>Bloquear o dia inteiro</span><div class="switch" id="bl-fullday"></div></div>
+    <div class="field-row" id="bl-time-row">
+      <div class="field"><label>Início</label><input type="time" id="bl-inicio"></div>
+      <div class="field"><label>Fim</label><input type="time" id="bl-fim"></div>
+    </div>
+    <div class="field"><label>Motivo (opcional)</label><input id="bl-motivo" placeholder="Ex: Manutenção"></div>
+    <button class="btn btn-primary btn-block-gap" id="btn-save-bloqueio">BLOQUEAR</button>
+    <button class="btn btn-ghost" id="btn-cancel-bloqueio">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: FOLGA ===================== -->
+<div class="modal-overlay hidden" id="modal-folga">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">Nova Folga</h3>
+    <div class="field"><label>Barbeiro</label><select id="fg-barbeiro"></select></div>
+    <div class="field"><label>Tipo</label>
+      <select id="fg-tipo"><option value="weekly">Toda semana (dia fixo)</option><option value="date">Data específica</option></select>
+    </div>
+    <div class="field" id="fg-weekday-field"><label>Dia da semana</label>
+      <select id="fg-weekday">
+        <option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option>
+        <option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option>
+      </select>
+    </div>
+    <div class="field hidden" id="fg-date-field"><label>Data</label><input type="date" id="fg-date"></div>
+    <button class="btn btn-primary btn-block-gap" id="btn-save-folga">SALVAR FOLGA</button>
+    <button class="btn btn-ghost" id="btn-cancel-folga">Cancelar</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>window.FIREBASE_APP_NAME = 'admin-app';</script>
+<script src="firebase-config.js"></script>
+<script src="utils.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

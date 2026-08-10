@@ -1,93 +1,142 @@
-# Confere Rota — Conferência de Pacotes
+# Denner Barbearia — Sistema de Agendamento
 
-Aplicativo web (PWA) para motoristas registrarem os pacotes de uma rota via
-leitura de código de barras (câmera ou leitor Bluetooth) e enviarem a
-conferência pronta pelo WhatsApp. 100% front-end — HTML, CSS e JavaScript
-puro, sem backend, pronto para o GitHub Pages.
+Site mobile-first (HTML + CSS + JavaScript puro) com backend em Firebase
+(Authentication + Firestore). Três áreas: **Cliente** (`index.html`),
+**Painel Admin** (`admin.html`) e **Painel do Barbeiro** (`barbeiro.html`).
 
-## Como publicar no GitHub Pages
+Nenhuma etapa aqui exige linha de comando — tudo é feito pelo navegador,
+no Firebase Console e no GitHub.
 
-1. Crie um repositório no GitHub (ex.: `confere-rota`).
-2. Vá em **Add file → Upload files** e arraste **todos os arquivos desta
-   pasta de uma vez** (não tem pasta nenhuma pra se preocupar — é só
-   selecionar tudo e soltar).
-3. Commit.
-4. No repositório, vá em **Settings → Pages**.
-5. Em **Source**, selecione a branch `main` (ou `master`) e a pasta `/root`.
-6. Salve. Em alguns minutos o app estará disponível em
-   `https://SEU-USUARIO.github.io/confere-rota/`.
-7. Abra o link no celular pelo Chrome (Android) ou Safari (iOS).
+---
 
-Não é necessário nenhum passo de build — os arquivos já estão prontos para
-produção.
+## 1. Projeto Firebase
 
-## Estrutura de arquivos
+✅ Já conectado ao projeto **barbearia-b244b** — as chaves já estão em
+`firebase-config.js`, não precisa mexer nisso.
 
-Todos os arquivos ficam soltos, direto na raiz do repositório — sem
-subpastas:
+Falta ativar os serviços (gratuito, plano Spark):
 
-```
-index.html          Estrutura das duas telas (dados da rota e scanner)
-style.css             Todo o visual (tema azul-marinho + branco, responsivo)
-app.js                 Lógica: formulário, câmera, leitor bluetooth, lista, WhatsApp, PWA
-manifest.json          Metadados do app instalável (ícones, cores, nome)
-sw.js                   Service worker — cache do app shell para uso offline
-icon-192.png            Ícone do app (192px)
-icon-512.png            Ícone do app (512px)
-icon-maskable-192.png   Ícone "maskable" (192px)
-icon-maskable-512.png   Ícone "maskable" (512px)
-```
+1. Acesse [console.firebase.google.com](https://console.firebase.google.com) → abra o projeto **barbearia-b244b**.
+2. **Build → Authentication → Get started**.
+   - Aba "Sign-in method" → ative **E-mail/senha**.
+   - Ative também **Anônimo** (é como os clientes usam "Meus agendamentos" sem precisar criar conta).
+3. **Build → Firestore Database → Create database** → modo **produção** → escolha a região mais próxima (ex: `southamerica-east1`).
 
-## Funcionalidades
+> **Sobre fotos**: este projeto usa **link de imagem** (cole a URL de uma foto) em vez de upload de arquivo — assim você não precisa ativar o Firebase Storage nem cadastrar cartão. Veja a seção "Fotos" mais abaixo.
 
-- **Tela inicial**: placa, motorista, rota e ID da rota, com validação.
-- **Scanner por câmera**: leitura de códigos 1D (Code 128, Code 39, EAN,
-  UPC, Codabar, Interleaved 2 of 5) via [Quagga.js], usando a câmera
-  traseira do celular.
-- **Leitor Bluetooth (pistola)**: reconhecido automaticamente. O app
-  detecta sequências de teclas digitadas muito rápido (padrão de leitores
-  HID/teclado) e trata como um código lido, mesmo sem nenhum campo em foco.
-- **Feedback de leitura**: som de confirmação (gerado via Web Audio API,
-  sem depender de arquivo externo), vibração curta e mensagem de sucesso.
-- **Duplicados bloqueados**: tentativa de reler um código já escaneado
-  mostra "Este pacote já foi escaneado." e não o adiciona de novo.
-- **Lista de pacotes**: contador, lista com opção de remover item por item,
-  botão "Limpar lista" com confirmação.
-- **Envio para WhatsApp**: monta a mensagem no formato solicitado e abre
-  `https://api.whatsapp.com/send?text=...` para o motorista escolher o
-  contato/grupo de destino.
-- **PWA offline**: depois do primeiro carregamento (que precisa de internet
-  para baixar a biblioteca de leitura de código de barras), o app funciona
-  sem conexão, graças ao service worker (`sw.js`). Pode ser instalado na
-  tela inicial do celular (Android mostra o botão "Instalar aplicativo";
-  no iPhone, use Compartilhar → "Adicionar à Tela de Início" no Safari).
-- **Sessão preservada**: se o app for fechado no meio de uma rota, os dados
-  da rota e os pacotes já escaneados continuam salvos no aparelho
-  (localStorage) ao reabrir.
+## 2. (já feito) Conectar o código ao seu projeto
 
-## Observações importantes
+Isso já está pronto em `firebase-config.js` — pule para o passo 3.
 
-- **Permissão de câmera**: o navegador vai pedir permissão de câmera na
-  primeira vez. Se for negada ou o aparelho não tiver câmera compatível, o
-  app continua funcionando normalmente pela leitura manual/Bluetooth — o
-  status "Câmera ativa" no topo do visor avisa quando a câmera está ou não
-  disponível.
-- **HTTPS obrigatório para câmera**: o GitHub Pages já serve o site em
-  HTTPS por padrão, então a câmera funciona normalmente. Se for testar
-  localmente, use `https://` ou `http://localhost`, nunca abra o
-  `index.html` direto como arquivo (`file://`), pois o navegador bloqueia o
-  acesso à câmera nesse caso.
-- **Biblioteca de leitura de código de barras**: é carregada de um CDN
-  (jsDelivr) na primeira visita e fica em cache pelo service worker para
-  uso offline depois disso. Se quiser eliminar totalmente a dependência de
-  CDN, baixe o arquivo `quagga.min.js` e referencie-o localmente em
-  `quagga.min.js` (arquivo solto, na raiz, como os demais), ajustando o
-  `<script>` no `index.html` e a
-  lista `ARQUIVOS_EXTERNOS` do `sw.js`.
-- **Número de WhatsApp**: como o pedido não especifica um número fixo de
-  destino, o app abre o WhatsApp com a mensagem pronta e deixa o motorista
-  escolher o contato/grupo. Se quiser enviar sempre para um número fixo,
-  troque a URL em `app.js` (função `btnEnviarWhatsapp` → adicione o
-  número, ex.: `https://api.whatsapp.com/send?phone=55SEUNUMERO&text=...`).
+## 3. Publicar as regras de segurança
 
-[Quagga.js]: https://github.com/serratus/quaggaJS
+1. **Firestore Database → Regras** → apague o conteúdo → cole o conteúdo de `firestore.rules` → **Publicar**.
+
+## 4. Criar o PIN do Administrador (direto pelo site, sem Firebase Console)
+
+1. Abra `admin.html` (local ou já publicado).
+2. Como ainda não existe nenhum administrador, vai aparecer a tela **"Primeiro acesso"** automaticamente.
+3. Escolha o PIN que você vai usar (mínimo 6 dígitos), confirme, e toque em **CRIAR PIN E ENTRAR**.
+4. Pronto — já entra direto no painel com esse PIN a partir de agora.
+
+> ⚠️ **Importante — faça isso assim que publicar o site**: essa tela de
+> "Primeiro acesso" fica disponível pra **qualquer pessoa que abrir
+> `admin.html` antes de você**, já que o site é público. Depois que o
+> primeiro PIN é criado (por você ou por outra pessoa), essa porta se
+> fecha sozinha e não abre mais. Então: assim que subir os arquivos pro
+> GitHub Pages, entre em `admin.html` e crie seu PIN **antes** de
+> divulgar o link do site pra qualquer pessoa. Se por acaso alguém criar
+> antes de você, me avise que ajudo a resetar pelo Firebase Console.
+
+Depois de criado, você pode trocar o PIN quando quiser em **Painel Admin
+→ Configurações → Administrador**, sem precisar do Firebase Console.
+
+## 5. Popular dados iniciais (serviços e horários)
+
+1. Abra `admin.html` no navegador (localmente ou já publicado) e entre com o PIN.
+2. Abra o Console do navegador (F12) → cole o conteúdo de `seed.js` → Enter.
+3. Isso cria os 4 serviços iniciais e os horários de funcionamento padrão.
+   Depois disso, ajuste tudo pela própria aba **Configurações** e **Serviços** do painel.
+
+## 6. Cadastrar os barbeiros (direto pelo painel)
+
+1. No painel admin → aba **Barbeiros** → **＋ NOVO BARBEIRO**.
+2. Preencha nome, telefone, foto (opcional) e o **e-mail e senha de login** que esse barbeiro vai usar.
+3. Toque em **SALVAR**.
+
+O login já é criado automaticamente e o barbeiro já consegue entrar em
+`barbeiro.html` com esse e-mail e senha, enxergando só a própria agenda.
+Se ele esquecer a senha, tem um botão "Esqueci minha senha" na tela de
+login dele, que envia um link de redefinição por e-mail — nada disso
+passa pelo Firebase Console.
+
+## 7. Fotos (logo, capa, barbeiros, serviços, galeria)
+
+Fotos são enviadas direto do celular e guardadas **dentro do seu próprio
+Firestore** — o site comprime a imagem no celular antes de salvar, então
+não precisa de Firebase Storage, cartão, nem conta em nenhum serviço
+externo. É só tocar em "escolher foto" em qualquer lugar do painel admin
+que peça imagem, e pronto.
+
+Único detalhe técnico: por ficar guardada como texto dentro do banco
+(em vez de um arquivo separado), cada foto é comprimida automaticamente
+para caber no limite do Firestore (a qualidade fica ótima para o uso no
+site — telas de celular — mas não é indicada para imprensa/impressão em
+alta resolução).
+
+## 8. Publicar no GitHub Pages (pelo celular)
+
+Todos os arquivos ficam soltos, sem pastas — é só selecionar tudo de uma vez:
+
+1. No app ou site do GitHub, crie um repositório novo (ex: `denner-barbearia`) — pode marcar como **Public**.
+2. Abra o repositório → toque em **Add file → Upload files**.
+3. Toque em "escolher seus arquivos", navegue até a pasta onde estão os arquivos deste projeto no seu celular e **selecione todos de uma vez** (toque e segure no primeiro, depois toque nos outros para marcar vários — ou use "Selecionar tudo" do gerenciador de arquivos).
+4. Envie. Como não há nenhuma subpasta, o GitHub aceita tudo junto, sem erro.
+5. Role até "Commit changes" → toque em **Commit changes** para confirmar.
+6. Vá em **Settings → Pages** → em "Source" escolha a branch `main` e a pasta `/ (root)` → **Save**.
+7. Em alguns minutos o site estará em `https://SEU-USUARIO.github.io/SEU-REPOSITORIO/`.
+8. Volte no Firebase: **Authentication → Settings → Authorized domains → Add domain** → adicione esse domínio do GitHub Pages (senão o login trava por segurança).
+
+---
+
+## Estrutura de dados (Firestore)
+
+| Coleção | Descrição |
+|---|---|
+| `services` | serviços (nome, preço, duração, foto, ativo) |
+| `barbers` | barbeiros — **ID do documento = UID do login no Auth** |
+| `appointments` | agendamentos (cliente, serviço, barbeiro, data, hora, status) |
+| `businessSettings/general` | nome, contatos, endereço, redes sociais, horário de funcionamento |
+| `blockedTimes` | bloqueios pontuais (dia inteiro ou intervalo) |
+| `daysOff` | folgas fixas (dia da semana) ou pontuais (data) de cada barbeiro |
+| `gallery` | fotos da galeria/home/sobre |
+| `admins` | UIDs com acesso ao painel administrativo |
+| `clients` | nome/telefone salvos de cada cliente (perfil) |
+| `notifications` | estrutura pronta para uso futuro (lembretes, etc.) |
+
+## O que foi simplificado nesta primeira versão
+
+- **WhatsApp**: o botão "Confirmar no WhatsApp" abre uma conversa já com a
+  mensagem pronta (`wa.me`). Não é um envio automático via API — para isso
+  seria necessário o WhatsApp Business API (serviço pago à parte).
+- **Criação de login de barbeiro/admin**: feita manualmente pelo Firebase
+  Console (não existe um servidor próprio criando contas). Para automatizar
+  isso completamente no futuro, dá para adicionar o **Firebase Functions**
+  (plano Blaze) e um formulário que cria o usuário via Admin SDK.
+- **Conflito de horário**: o sistema revalida no momento da confirmação
+  (evita a maioria das corridas entre dois clientes agendando ao mesmo
+  tempo), mas uma garantia 100% atômica exigiria uma Cloud Function/transação
+  no servidor.
+- **Fotos como texto no banco**: simples, gratuito e 100% dentro do seu
+  Firebase, mas cada documento do Firestore tem um limite de ~1MB — por
+  isso as fotos são comprimidas antes de salvar (ótimas para tela de
+  celular, não para impressão). Se um dia quiser fotos em alta resolução
+  separadas do banco, o arquivo `storage.rules` já vem pronto para quando
+  você migrar para o Firebase Storage (que hoje exige o plano Blaze).
+
+## Testando localmente antes de publicar
+
+Não dá para abrir `index.html` direto com duplo clique (o navegador bloqueia
+alguns recursos por segurança). Rode um servidor local simples, por exemplo:
+- VS Code → extensão "Live Server" → botão direito em `index.html` → "Open with Live Server", ou
+- Python: `python3 -m http.server 8000` na pasta do projeto e acesse `http://localhost:8000`.

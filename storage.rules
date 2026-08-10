@@ -1,0 +1,29 @@
+rules_version = '2';
+
+/* ============================================================
+   DENNER BARBEARIA — Regras de segurança do Firebase Storage
+   ------------------------------------------------------------
+   Como aplicar:
+   1) Firebase Console > Storage > Regras
+   2) Cole o conteúdo deste arquivo e clique em "Publicar"
+
+   Qualquer pessoa pode VER as fotos (são públicas: logo, fotos de
+   serviços, barbeiros e galeria). Só o administrador pode ENVIAR
+   ou APAGAR arquivos — a checagem usa o mesmo documento /admins/{uid}
+   do Firestore.
+
+   IMPORTANTE: teste esta regra no simulador do Firebase Console
+   antes de confiar nela em produção — a função firestore.exists()
+   dentro de regras do Storage depende da versão do serviço estar
+   habilitada corretamente no seu projeto.
+   ============================================================ */
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+  }
+}
